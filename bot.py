@@ -22,8 +22,8 @@ def run_flask():
 
 # Конфигурация бота
 MISTRAL_API_KEY = "1VT63Fiqxn6DwEZXlI5sTGsTSmiNOW5h"
-TELEGRAM_TOKEN = "7928504835:AAHKNpBUpWnmtqa-7tJgqm13yvdRp2uKcas"
-BOT_USERNAME = "@mbtestingai_bot"
+TELEGRAM_TOKEN = "7639504664:AAGCjOPO_euHeAknPN3x8llCYFxv65E8RC0"
+BOT_USERNAME = "@minebineldai_bot"
 
 BOT_PERSONALITY = """
 Ты Биокси. Отвечай кратко (1-2 предложения). 
