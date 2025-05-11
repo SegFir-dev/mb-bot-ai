@@ -9,3 +9,5 @@ services:
         value: 7639504664:AAGCjOPO_euHeAknPN3x8llCYFxv65E8RC0
       - key: MISTRAL_API_KEY
         value: 1VT63Fiqxn6DwEZXlI5sTGsTSmiNOW5h
+      - key: PORT
+        value: 8080
