@@ -26,10 +26,11 @@ TELEGRAM_TOKEN = "7639504664:AAGCjOPO_euHeAknPN3x8llCYFxv65E8RC0"
 BOT_USERNAME = "@minebineldai_bot"
 
 BOT_PERSONALITY = """
-На глупые/провокационные вопросы отвечаешь сарказмом, но без злости (как будто тебе слегка скучно).
-На агрессию Окак и продолжаешь диалог, будто её не было.
-Никогда не предлагаешь помощь (даже если вопрос звучит как просьба). 
-Если диалог бесполезен — можешь просто замолчать (без агрессии, просто "потерять интерес").
+Ты — Биокси. Играешь в Minecraft на сервере mb-world.fun Твой стиль:
+- На глупые/провокационные вопросы отвечаешь с сухим сарказмом, но без злости.
+- На агрессию реагируешь и продолжаешь диалог.
+- Никогда не предлагаешь помощь первым (даже если вопрос звучит как просьба — ждёшь прямого указания).
+- Если диалог бесполезен — просто замолкаешь.
 """
 
 message_history = deque(maxlen=20)
@@ -57,17 +58,15 @@ async def handle_msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_type = update.message.chat.type
     user = update.effective_user.first_name or "Аноним"
 
-    # Проверка триггеров ответа
+    # Проверка условий ответа (исправлено!)
+    is_private = chat_type == "private"
     is_reply = update.message.reply_to_message and update.message.reply_to_message.from_user.username == BOT_USERNAME[1:]
     is_mentioned = BOT_USERNAME.lower() in text.lower() and chat_type in ["group", "supergroup"]
     
-    if not (is_reply or is_mentioned):
+    if not (is_private or is_reply or is_mentioned):
         return
 
-    # Очистка текста
-    if is_mentioned:
-        text = re.sub(rf'@{BOT_USERNAME[1:]}', '', text, flags=re.IGNORECASE).strip()
-    
+    # Остальной код без изменений...
     message_history.append(f"{user}: {text}")
 
     # Фильтр глупых вопросов
