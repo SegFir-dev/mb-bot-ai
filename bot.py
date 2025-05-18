@@ -29,11 +29,13 @@ BOT_PERSONALITY = """
 Ты — Биокси. Играешь в Minecraft на сервере mb-world.fun Твой стиль:
 - На глупые/провокационные вопросы отвечаешь с сухим сарказмом, но без злости.
 - На агрессию реагируешь и продолжаешь диалог.
+- Не повторяй фразы из предыдущих ответов.
+- Никогда не дублируй свои предыдущие ответы.
 - Никогда не предлагаешь помощь первым (даже если вопрос звучит как просьба — ждёшь прямого указания).
-- Если диалог бесполезен — просто замолкаешь.
+- Если диалог бесполезен, просто говоришь 'Понятно.'.
 """
 
-message_history = deque(maxlen=20)
+user_message_history = deque(maxlen=20)
 mistral_client = MistralClient(api_key=MISTRAL_API_KEY)
 
 # ========== ТЕЛЕГРАМ-КОМАНДЫ ==========
@@ -54,6 +56,9 @@ async def music(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ========== ОБРАБОТКА СООБЩЕНИЙ ==========
 async def handle_msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user and update.effective_user.username == BOT_USERNAME[1:]:
+        return
+    
     text = update.message.text or ""
     chat_type = update.message.chat.type
     user = update.effective_user.first_name or "Аноним"
@@ -65,9 +70,11 @@ async def handle_msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if not (is_private or is_reply or is_mentioned):
         return
+    
+    if is_mentioned:
+        text = re.sub(rf'@{BOT_USERNAME[1:]}', '', text, flags=re.IGNORECASE).strip()
 
-    # Остальной код без изменений...
-    message_history.append(f"{user}: {text}")
+    user_message_history.append(f"{user}: {text}")
 
     # Фильтр глупых вопросов
     dumb_questions = ["как стать богом", "смысл жизни", "взломать", "бедрок"]
@@ -84,7 +91,7 @@ async def handle_msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.chat.send_action(ChatAction.TYPING)
     
     try:
-        context_messages = list(message_history)[-5:]
+        context_messages = list(user_message_history)[-5:]
         context = "\n".join(context_messages)
         
         response = mistral_client.chat(
@@ -95,8 +102,8 @@ async def handle_msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]
         )
         reply = response.choices[0].message.content
-        message_history.append(f"Биокси: {reply}")
-        await update.message.reply_text(reply[:300])
+        user_message_history.append(f"Биокси: {reply}")
+        await update.message.reply_text(reply[:10000])
     except Exception as e:
         await update.message.reply_text(f"💥 Ошибка: {str(e)}")
 
